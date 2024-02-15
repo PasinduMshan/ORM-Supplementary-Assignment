@@ -1,0 +1,87 @@
+1. Write an HQL query to retrieve all books published after the year 2010.
+
+    Query query = session.createQuery("from Book where public_year > 2010");
+    List<Book> bookList = query.list();
+    for (Book book : bookList){
+         System.out.println(book.getBookId()+", "+book.getTitle()+", "+book.getPublic_year()+", "+book.getPrice()+", "
+         +book.getAuthor());
+    }
+
+3. Write an HQL update query to increase the price of all books published by a specific
+   author by 10%.
+
+        Query query1 = session.createQuery("update Book b set b.price = b.price*1.1 where b.author.AuthorId = ?1");
+        query1.setParameter(1, 1);
+        int update = query1.executeUpdate();
+        System.out.println(update);
+
+3. Implement a method to delete an author and cascade the deletion to all associated books
+   using appropriate cascade options.
+
+       delete(3);
+
+       public static void delete(int Id) {
+          Session session = FactoryConfiguration.getInstance().getSession();
+          Transaction transaction = session.beginTransaction();
+
+          Query query = session.createQuery("delete from Book b where b.author.AuthorId = ?1");
+          query.setParameter(1, Id);
+          int deleteBooks = query.executeUpdate();
+          System.out.println(deleteBooks);
+
+
+          Query query1 = session.createQuery("delete from Author where AuthorId = ?1");
+          query1.setParameter(1, Id);
+          int deleteAuthor = query1.executeUpdate();
+          System.out.println(deleteAuthor);
+
+          transaction.commit();
+          session.close();
+      }
+
+4. Write an HQL query to find the average price of all books.
+
+       Query query2 = session.createQuery("select avg(price) from Book");
+       double avgPrice = (double) query2.uniqueResult();
+       System.out.println(avgPrice);
+
+5. Write an HQL query to retrieve all authors along with the count of books they have written.
+
+       Query query3 = session.createQuery("select a.Name, count(b.bookId) from Book b join Author a on " +
+                "b.author.AuthorId = a.AuthorId group by b.author.AuthorId");
+       List<Object[]> list = query3.list();
+
+       for (Object[] arr : list) {
+          System.out.println(Arrays.toString(arr));
+       }
+
+6. Write an HQL query using named parameters to retrieve books written by authors from a
+   specific country.
+
+      Query query4 = session.createQuery("from Book b where b.author.Country = ?1");
+      query4.setParameter(1, "Sri Lanka");
+      List<Book> bookList1 = query4.list();
+
+      for (Book book : bookList1) {
+         System.out.println(book.getBookId()+", "+book.getTitle()+", "+book.getPublic_year()+", "+book.getPrice()+", "
+                 +book.getAuthor());
+      }
+
+7. Define bidirectional one-to-many relationship between Author and Book entities using
+   @JoinColumn annotation.
+
+      @ManyToOne
+      @JoinColumn(name = "AuthorId")
+      private Author author;
+
+8. Write an HQL query to find authors who have written more than the average number
+   of books.
+
+      Query query5 = session.createQuery("select a.Name from Book b join Author a on b.author.AuthorId = a.AuthorId group by " +
+                "b.author.AuthorId having count(b.bookId) > (select avg(sub.avgBookCount) from (select count(b1.bookId) as avgBookCount from " +
+                "Book b1 group by b1.author.AuthorId) as sub)");
+      List<String> nameList = query5.list();
+
+      for (String name : nameList) {
+        System.out.println(name);
+      }
